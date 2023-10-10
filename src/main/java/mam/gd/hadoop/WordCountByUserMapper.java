@@ -25,20 +25,12 @@ public class WordCountByUserMapper extends Mapper<LongWritable, Text, Text, Text
             throws IOException, InterruptedException {
 		Logger log = Logger.getLogger(WordCountByUserMapper.class);
         //2019-04-23 17:13:52.155578   74492f56-59cd-4759-b357-9817285cc39e   "Calvin Klein jeans"
-
-//		String line = value.toString();
-//		String[] items = line.split("\t");
-//		String userId = items[1];
-//		String words = items[2];
-
-
+        
         StringTokenizer st = new StringTokenizer(value.toString(), "\t");
         String date = st.nextToken();
         String userId = st.nextToken();
         String words = st.nextToken();
-
-//		Map<String, Integer> words = Integer.parseInt(items[2]);
-//				Map<String, Integer> words = Integer.parseInt(items[2]);
+        
         for (String word : words.split(" ")) {
             context.write(new Text(userId), new Text(word));
             context.getCounter(Counters.EXAMPLE_COUNTER).increment(1);
