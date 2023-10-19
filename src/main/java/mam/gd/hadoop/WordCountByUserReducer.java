@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -21,6 +22,7 @@ public class WordCountByUserReducer
             throws IOException, InterruptedException {
 
         Map<String, Integer> wordsMap = new HashMap<>();
+        int mostCommonWordsNumber = 3;
 
         for (Text word : values) {
             String wordString = word.toString();
@@ -31,12 +33,22 @@ public class WordCountByUserReducer
             }
         }
 
+//       we can pass param to the job with: hadoop jar -D myParams.someProp=5 ...   
+//        Configuration config = context.getConfiguration();
+//        int someProp = Integer.parseInt(config.get("myParams.someProp"));
+
         Stream<Map.Entry<String, Integer>> sorted =
                 wordsMap.entrySet().stream()
                         .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
         List<String> wordsList = sorted.map(Map.Entry::getKey).collect(Collectors.toList());
-
-        //Write output (3 most common words)
-        context.write(key, new Text(wordsList.get(0) + wordsList.get(1) + wordsList.get(2)));
+        StringBuilder value = new StringBuilder();
+        mostCommonWordsNumber = Math.min(wordsList.size(), mostCommonWordsNumber);
+        for (int i = 0; i < mostCommonWordsNumber; i++) {
+            value.append(wordsList.get(i));
+            if (i < mostCommonWordsNumber - 1) {
+                value.append(", ");
+            }
+        }
+        context.write(key, new Text(value.toString()));
     }
 }
